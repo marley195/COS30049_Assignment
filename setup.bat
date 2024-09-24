@@ -1,3 +1,4 @@
-python3 -m venv .
-Scripts\activate.bat
+python -m venv .
+call Scripts\activate.bat
 pip install -r requirements.txt
+deactivate
