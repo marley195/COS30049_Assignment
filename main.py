@@ -1,9 +1,7 @@
-import os
-import sys
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from data import load_data, plot_data, preprocess_data
+from data import load_data, preprocess_data
 from model import regression_model
 
 def main():
@@ -16,8 +14,6 @@ def main():
 
     model = regression_model(X_train, X_test, y_train, y_test)
 
-
-    plot_data(data)
-
+    
 if __name__ == "__main__":
     main()

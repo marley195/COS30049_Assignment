@@ -35,8 +35,3 @@ def preprocess_data(test_data):
     X_test_scaled = scaler.transform(X_test)
     
     return X_train_scaled, X_test_scaled, y_train, y_test
-
-def plot_data(data):
-    # Plot the data
-    data.plot(kind='scatter', x='PM2.5', y='PM10', c='NO2', cmap='viridis', s=data['SO2']*10, alpha=0.5)
-    plt.show()

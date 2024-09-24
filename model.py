@@ -2,6 +2,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 
 def regression_model(X_train, X_test, y_train, y_test):
+    
     model = LinearRegression()
     model.fit(X_train, y_train)
     y_test_pred = model.predict(X_test)
