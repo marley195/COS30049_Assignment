@@ -1,16 +1,16 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from data import load_data, preprocess_data
+from data import process_data, regression_data
 from model import regression_model
 
 def main():
 
     file_name = "data/city_day.csv"
     
-    data = load_data(file_name)
+    data = process_data(file_name)
 
-    X_train, X_test, y_train, y_test = preprocess_data(data)
+    X_train, X_test, y_train, y_test = regression_data(data)
 
     model = regression_model(X_train, X_test, y_train, y_test)
 

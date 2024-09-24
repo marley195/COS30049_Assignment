@@ -1,37 +1,41 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
+from sklearn.preprocessing import LabelEncoder
 
-def load_data(file_name):
-    # Load the data
+def process_data(file_name):
+
+    #loaded data with paramerter file_name
     data = pd.read_csv(file_name)
+    data_cleaned = data.drop(columns=['City', 'Date']).dropna(subset=['AQI', 'AQI_Bucket'])
 
-    # Drop the rows with missing values
-    data.dropna(inplace=True)
+    data_cleaned['AQI'] = pd.to_numeric(data_cleaned['AQI'], errors='coerce')
+    data_cleaned.dropna(inplace=True)
 
-    # Drop the columns that are not required
-    data.drop(['City', 'Date'], axis=1, inplace=True)
+    return data_cleaned
 
-    return data
+def regression_data(data):
 
-def preprocess_data(test_data):
-    # Pre-process the data
+    X_aqi = data.drop(columns=['AQI', 'AQI_Bucket'])
+    y_aqi = data['AQI']
+
+    X_train_aqi, X_test_aqi, y_train_aqi, y_test_aqi = train_test_split(X_aqi, y_aqi, test_size=0.2, random_state=42)
+    
     scaler = StandardScaler()
-    numerical_columns = test_data.drop(columns=['AQI_Bucket'])
-    
-    # Separate features and target
-    y = test_data['AQI'].values
-    X = numerical_columns.drop(columns=['AQI'])  # Exclude target variable from features
+    X_train_aqi = scaler.fit_transform(X_train_aqi)
+    X_test_aqi = scaler.transform(X_test_aqi)
 
-    # Split the data before scaling to avoid data leakage
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    return X_train_aqi, X_test_aqi, y_train_aqi, y_test_aqi
 
-    # Fit the scaler only on the training data
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
+def classifcation_data(data, scaler):
+
+    X_bucket = data.drop(columns=['AQI', 'AQI_Bucket'])
+    y_bucket = LabelEncoder().fit_transform(data['AQI_Bucket'])
     
-    return X_train_scaled, X_test_scaled, y_train, y_test
+    X_train_bucket, X_test_bucket, y_train_bucket, y_test_bucket = train_test_split(X_bucket, y_bucket, test_size=0.2, random_state=42)
+    
+    X_train_bucket = scaler.fit_transform(X_train_bucket)
+    X_test_bucket = scaler.transform(X_test_bucket)
+
+    return X_train_bucket, X_test_bucket, y_train_bucket, y_test_bucket
