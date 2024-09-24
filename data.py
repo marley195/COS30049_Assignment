@@ -5,7 +5,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
-from sklearn.preprocessing import LabelEncoder
 
 def load_data(file_name):
     # Load the data
@@ -34,20 +33,7 @@ def preprocess_data(test_data):
     # Fit the scaler only on the training data
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
-
-    print("Training set shape:", X_train_scaled.shape)
     
-    # Train and evaluate the model
-    model = LinearRegression()
-    model.fit(X_train_scaled, y_train)
-    y_test_pred = model.predict(X_test_scaled)
-
-    mse = mean_squared_error(y_test, y_test_pred)
-    print("Mean Squared Error:", mse)
-
-    score = model.score(X_test_scaled, y_test)
-    print("R^2 Score:", score)
-
     return X_train_scaled, X_test_scaled, y_train, y_test
 
 def plot_data(data):
