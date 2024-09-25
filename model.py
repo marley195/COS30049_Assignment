@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error, accuracy_score, classification_report, ConfusionMatrixDisplay
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 def regression_model(X_train, X_test, y_train, y_test):
     model = LinearRegression()
