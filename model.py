@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error 
 
-Define a function to create and evaluate linear regression model
-X_train,X_test : Feature datasets for training and testing
-y_train, y_test : Target datasets for training and testing
+# Define a function to create and evaluate linear regression model
+# X_train,X_test : Feature datasets for training and testing
+# y_train, y_test : Target datasets for training and testing
 def regression_model(X_train, X_test, y_train, y_test):
 
     # Initialize the Linear Regression model
