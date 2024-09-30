@@ -35,7 +35,7 @@ def get_normalization_layer(name, dataset):
 
 # Load Data
 
-csv_file = 'city_day.csv'
+csv_file = 'data/city_day.csv'
 dataframe = pd.read_csv(csv_file)
 
 # Clean Data
@@ -46,7 +46,7 @@ dataframe = dataframe.dropna(subset='AQI_Bucket')
 
 # Fill missing values with median.
 averages = dataframe.median(numeric_only=True).to_dict()
-dataframe = dataframe.fillna(averages)
+dataframe = dataframe.dropna()
 
 # Serialise Classification Data
 
@@ -83,22 +83,24 @@ for header in numeric_columns:
   encoded_features.append(encoded_numeric_col)
 
 # Build Model
-
+num_classes = len(aqib_map)
 all_features = tf.keras.layers.concatenate(encoded_features)
-x = tf.keras.layers.Dense(32, activation="relu")(all_features)
+x = tf.keras.layers.Dense(64, activation="relu")(all_features)
 x = tf.keras.layers.Dropout(0.5)(x)
-output = tf.keras.layers.Dense(1)(x)
+x = tf.keras.layers.Dense(32, activation="relu")(x)
+x = tf.keras.layers.Dropout(0.5)(x)
+output = tf.keras.layers.Dense(num_classes, activation="softmax")(x)
 
 model = tf.keras.Model(all_inputs, output)
 
 model.compile(optimizer='adam',
-              loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=["accuracy"],
               run_eagerly=True)
 
 # Train Model
 
-model.fit(train_ds, epochs=10, validation_data=val_ds)
+model.fit(train_ds, epochs=100, validation_data=val_ds)
 result = model.evaluate(test_ds, return_dict=True)
 
 print(f"Model Training Result: {result}")
