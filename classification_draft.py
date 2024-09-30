@@ -2,6 +2,10 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+
 from tensorflow.keras import layers
 
 # Parameters
@@ -100,7 +104,7 @@ model.compile(optimizer='adam',
 
 # Train Model
 
-model.fit(train_ds, epochs=100, validation_data=val_ds)
+history = model.fit(train_ds, epochs=50, validation_data=val_ds)
 result = model.evaluate(test_ds, return_dict=True)
 
 print(f"Model Training Result: {result}")
@@ -151,3 +155,38 @@ prob = tf.nn.sigmoid(predictions[0])
 raw_value = float(prob[0]) / (len(aqib_map) - 1)
 rounded_value = int(round(raw_value))
 print(f"Prediction: {aqib_map[rounded_value]}")
+
+
+
+# Assuming you have the test labels and predictions:
+y_true = np.concatenate([y for x, y in test_ds], axis=0)  # True labels from the test dataset
+y_pred = np.argmax(model.predict(test_ds), axis=1)  # Predicted labels
+
+# Generate confusion matrix
+cm = confusion_matrix(y_true, y_pred)
+
+# Plot confusion matrix using seaborn's heatmap for better visualization
+plt.figure(figsize=(10, 7))
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=aqib_map.values(), yticklabels=aqib_map.values())
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix for AQI Classification')
+plt.show()
+
+# Select a sample from the test dataset
+for batch in test_ds.take(1):
+    inputs, labels = batch
+
+# Get predictions
+predictions = model.predict(inputs)
+predicted_classes = np.argmax(predictions, axis=1)
+
+# Plot true vs predicted
+plt.figure(figsize=(10, 5))
+plt.scatter(range(len(labels)), labels, label="True Labels", color="blue")
+plt.scatter(range(len(predicted_classes)), predicted_classes, label="Predicted Labels", color="red", marker='x')
+plt.title('True vs Predicted AQI Buckets')
+plt.xlabel('Sample Index')
+plt.ylabel('AQI Bucket')
+plt.legend()
+plt.show()
