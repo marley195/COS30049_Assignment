@@ -43,8 +43,8 @@ def clean_dataset(df):
 
 	# Fill missing values with average (median) values.
 	averages = df.median(numeric_only=True).to_dict()
-	#df = df.fillna(averages)
-	df = df.dropna()
+	df = df.fillna(averages)
+	#df = df.dropna()
 	
 	# Serialise Classification Data
 
