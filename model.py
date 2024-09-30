@@ -1,7 +1,6 @@
-import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.metrics import mean_squared_error
 
 def regression_model(X_train, X_test, y_train, y_test):
 
@@ -22,9 +21,11 @@ def regression_model(X_train, X_test, y_train, y_test):
     print("Mean Squared Error:", mse)
     print("R^2 Score:", r2_score)
 
-    # Plot Actual vs Predicted values for Linear Regression in a scatter plot
-    # Blue dots represents the actual vs predicted AQI values
-    # Red line shows the perfect prediction (y=x)
+    """ 
+    Plot Actual vs Predicted values for Linear Regression in a scatter plot
+    Blue dots represents the actual vs predicted AQI values
+    Red line shows the perfect prediction (y=x) 
+    """
     plt.figure(figsize=(10, 6))
     plt.scatter(y_test, y_test_pred, color='blue', alpha=0.5)
     plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', lw=2)
