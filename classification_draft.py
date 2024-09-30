@@ -11,6 +11,7 @@ from tensorflow.keras import layers
 # Parameters
 
 batch_size = 256
+epochs = 100
 
 # Functions
 
@@ -44,13 +45,18 @@ dataframe = pd.read_csv(csv_file)
 
 # Clean Data
 
+print(f"Loaded Rows: {len(dataframe)}")
+
 dataframe = dataframe.drop(columns=['City', 'Date', 'AQI'])
 dataframe = dataframe.dropna(axis=1, how='all')
 dataframe = dataframe.dropna(subset='AQI_Bucket')
 
 # Fill missing values with median.
 averages = dataframe.median(numeric_only=True).to_dict()
-dataframe = dataframe.dropna()
+dataframe = dataframe.fillna(averages)
+#dataframe = dataframe.dropna()
+
+print(f"Remaining Rows: {len(dataframe)}")
 
 # Serialise Classification Data
 
@@ -104,7 +110,7 @@ model.compile(optimizer='adam',
 
 # Train Model
 
-history = model.fit(train_ds, epochs=50, validation_data=val_ds)
+model.fit(train_ds, epochs=epochs, validation_data=val_ds)
 result = model.evaluate(test_ds, return_dict=True)
 
 print(f"Model Training Result: {result}")
@@ -142,9 +148,41 @@ sample2 = {
     'Xylene': 0.63
 } # Expected: Moderate
 
-sample = sample1
+sample3 = {
+    'PM2.5': 128.64,
+    'PM10': 202.77,
+    'NO': 11.96,
+    'NO2': 14.02,
+    'NOx': 21.02,
+    'NH3': 6.05,
+    'CO': 0.66,
+    'SO2': 10.06,
+    'O3': 19.17,
+    'Benzene': 2.99,
+    'Toluene': 3.0,
+    'Xylene': 2.0
+} # Expected: Poor
 
-sample.update({k: v for k, v in averages.items() if v})
+sample4 = {
+    'PM2.5': 100.72,
+    'PM10': 152.72,
+    'NO': 17.77,
+    'NO2': 29.84,
+    'NOx': 2.87,
+    'NH3': 39.74,
+    'CO': 1.06,
+    'SO2': 4.98,
+    'O3': 23.98,
+    'Benzene': 1.92,
+    'Toluene': 2.85,
+    'Xylene': 0.1
+} # Expected: Poor
+
+sample = sample4
+
+#sample.update({k: v for k, v in averages.items() if v})
+
+# remove features that were completely empty
 sample = {k: sample[k] for k in sample.keys() & numeric_columns}
 
 input_dict = {name: tf.convert_to_tensor([value]) for name, value in sample.items()}
@@ -152,41 +190,14 @@ input_dict = {name: tf.convert_to_tensor([value]) for name, value in sample.item
 predictions = model.predict(input_dict)
 prob = tf.nn.sigmoid(predictions[0])
 
-raw_value = float(prob[0]) / (len(aqib_map) - 1)
-rounded_value = int(round(raw_value))
+denormed_value = float(prob[0]) * (len(aqib_map) - 1)
+
+print(denormed_value)
+print(aqib_map)
+rounded_value = int(round(denormed_value))
 print(f"Prediction: {aqib_map[rounded_value]}")
 
-
-
-# Assuming you have the test labels and predictions:
-y_true = np.concatenate([y for x, y in test_ds], axis=0)  # True labels from the test dataset
-y_pred = np.argmax(model.predict(test_ds), axis=1)  # Predicted labels
-
-# Generate confusion matrix
-cm = confusion_matrix(y_true, y_pred)
-
-# Plot confusion matrix using seaborn's heatmap for better visualization
-plt.figure(figsize=(10, 7))
-sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=aqib_map.values(), yticklabels=aqib_map.values())
-plt.xlabel('Predicted')
-plt.ylabel('True')
-plt.title('Confusion Matrix for AQI Classification')
-plt.show()
-
-# Select a sample from the test dataset
-for batch in test_ds.take(1):
-    inputs, labels = batch
-
-# Get predictions
-predictions = model.predict(inputs)
-predicted_classes = np.argmax(predictions, axis=1)
-
-# Plot true vs predicted
-plt.figure(figsize=(10, 5))
-plt.scatter(range(len(labels)), labels, label="True Labels", color="blue")
-plt.scatter(range(len(predicted_classes)), predicted_classes, label="Predicted Labels", color="red", marker='x')
-plt.title('True vs Predicted AQI Buckets')
-plt.xlabel('Sample Index')
-plt.ylabel('AQI Bucket')
-plt.legend()
-plt.show()
+#dropna
+#Model Training Result: {'accuracy': 0.9855769276618958, 'loss': 0.057369641959667206}
+#fillna
+#Model Training Result: {'accuracy': 1.0, 'loss': 0.001120519358664751}
