@@ -4,6 +4,10 @@ import tensorflow as tf
 
 from tensorflow.keras import layers
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+
 # Parameters
 
 batch_size = 256
@@ -43,8 +47,8 @@ def clean_dataset(df):
 
 	# Fill missing values with average (median) values.
 	averages = df.median(numeric_only=True).to_dict()
-	df = df.fillna(averages)
-	#df = df.dropna()
+	#df = df.fillna(averages)
+	df = df.dropna()
 	
 	# Serialise Classification Data
 
@@ -149,3 +153,36 @@ sample = {
 } # Expected: Poor
 
 print(use_model(model, input_columns, aqc_map, sample))
+
+# Assuming you have the test labels and predictions:
+y_true = np.concatenate([y for x, y in test_ds], axis=0)  # True labels from the test dataset
+y_pred = np.argmax(model.predict(test_ds), axis=1)  # Predicted labels
+
+# Generate confusion matrix
+cm = confusion_matrix(y_true, y_pred)
+
+# Plot confusion matrix using seaborn's heatmap for better visualization
+plt.figure(figsize=(10, 7))
+sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=aqc_map.values(), yticklabels=aqc_map.values())
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix for AQI Classification')
+plt.show()
+
+# Select a sample from the test dataset
+for batch in test_ds.take(1):
+    inputs, labels = batch
+
+# Get predictions
+predictions = model.predict(inputs)
+predicted_classes = np.argmax(predictions, axis=1)
+
+# Plot true vs predicted
+plt.figure(figsize=(10, 5))
+plt.scatter(range(len(labels)), labels, label="True Labels", color="blue")
+plt.scatter(range(len(predicted_classes)), predicted_classes, label="Predicted Labels", color="red", marker='x')
+plt.title('True vs Predicted AQI Buckets')
+plt.xlabel('Sample Index')
+plt.ylabel('AQI Bucket')
+plt.legend()
+plt.show()

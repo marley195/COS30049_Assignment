@@ -104,7 +104,7 @@ model.compile(optimizer='adam',
 
 # Train Model
 
-history = model.fit(train_ds, epochs=50, validation_data=val_ds)
+history = model.fit(train_ds, epochs=100, validation_data=val_ds)
 result = model.evaluate(test_ds, return_dict=True)
 
 print(f"Model Training Result: {result}")
