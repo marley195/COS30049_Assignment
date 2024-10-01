@@ -8,7 +8,7 @@ from sklearn.metrics import confusion_matrix
 def main():
     #create variables for classifcation model + file name
     batch_size = 256
-    epochs = 5
+    epochs = 100
     file_name = "data/city_day.csv"
     # clean data for regression model
     data = clean_data(file_name)
