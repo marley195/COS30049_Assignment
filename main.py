@@ -6,21 +6,21 @@ import seaborn as sns
 from sklearn.metrics import confusion_matrix
 
 def main():
-    
+    #create variables for classifcation model + file name
     batch_size = 256
     epochs = 5
-    
     file_name = "data/city_day.csv"
+    # clean data for regression model
     data = clean_data(file_name)
 
-    # Regression model
+    # build + Train regression model
     X_train, X_test, y_train, y_test = regression_data(data)
     regression_model(X_train, X_test, y_train, y_test)
 
-    # Classification model
+    # data pre-processing for classification model
     df, aqc_map = clean_dataset(file_name)
     train_ds, val_ds, test_ds = prepare_dataset(df, batch_size)
-
+    # Build Classification Model
     model = classification_model(df, aqc_map, train_ds)
 
     # Train Classification Model
