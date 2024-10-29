@@ -7,36 +7,47 @@ from fastapi.responses import StreamingResponse
 import time
 import pickle
 import numpy as np
+import tensorflow as tf
+##NEED AT LEAST 4 
 
 app = FastAPI()
 
 model = None
 
 #Load in first trained model
-with open("classification_model.h5", "rb") as class_model_file:
-    classifcation_model = pickle.load(class_model_file)
+classifcation_model = tf.keras.models.load_model("model/classification_model.keras")
 #Load in second trained model
-with open("regression_model.pkl"), "rb" as reg_model_file:
+with open("model/regression_model.pkl", "rb") as reg_model_file:
     regression_model = pickle.load(reg_model_file)
 
-#Define data model for the input using pydantic.
+
+"""
+    Define data model for the input using pydantic.
+    Main Metrics:
+    Particle Matter2.5 (PM.25)
+    Pariculate Matter10 (PM.10)
+    carbon monoxide (co)
+    sulphur dioxide (SO2)
+    nitrogen dioxide (NO2)
+    ozone (O3)
+"""
 class AirQualityInput(BaseModel):
     PM25 : float
+    PM10 : float
     co : float
-    NO : float
+    SO2 : float
     NO2 : float
-    NOx : float
-    NH3 : float
+    O3 : float
     model_choice: str
 
 ##Define the post function for the predict endpoint.
 @app.post("/predict")
 async def predict(input_data: AirQualityInput):
-    input_array = np.array([[input_data.PM25, input_data.co, input_data.NO, input_data.NO2, input_data.NOx, input_data.NH3]])
+    input_array = np.array([[input_data.PM25, input_data.PM10, input_data.co, input_data.SO2, input_data.NO2, input_data.O3]])
     
-    if input.model_choice == "Classifcation":
+    if input.model == "Classifcation":
         selected_model = classifcation_model
-    elif input_data.model_choice == "Regression":
+    elif input_data.model == "Regression":
         selected_model = regression_model
     else:
         raise HTTPException(status_code=400, detail="Invalid model choice. Please choose Classifcation or Regression")

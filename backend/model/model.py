@@ -7,27 +7,9 @@ from data import get_normalization_layer
 import numpy as np
 
 # Regression Model
-def regression_model(X_train, X_test, y_train, y_test):
+def regression_model(X_train, y_train):
     model = LinearRegression()
     model.fit(X_train, y_train)
-
-    # Predict on the test set and evaluate
-    y_test_pred = model.predict(X_test)
-    mse = mean_squared_error(y_test, y_test_pred)
-    r2_score = model.score(X_test, y_test)
-
-    # Display evaluation metrics
-    print("Mean Squared Error:", mse)
-    print("R^2 Score:", r2_score)
-
-    # Plot Actual vs Predicted values
-    plt.figure(figsize=(10, 6))
-    plt.scatter(y_test, y_test_pred, color='blue', alpha=0.5)
-    plt.plot([min(y_test), max(y_test)], [min(y_test), max(y_test)], color='red', lw=2)
-    plt.xlabel('Actual AQI')
-    plt.ylabel('Predicted AQI')
-    plt.title('Actual vs Predicted AQI (Linear Regression)')
-    plt.show()
 
     return model
 
