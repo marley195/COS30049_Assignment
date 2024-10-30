@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Depends, Request
+from fastapi import FastAPI, HTTPException, Depends, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
 from fastapi import BackgroundTasks
@@ -8,17 +9,36 @@ import time
 import pickle
 import numpy as np
 import tensorflow as tf
+import joblib
 ##NEED AT LEAST 4 
 
 app = FastAPI()
 
+
+prediction_history = []
 model = None
 
-#Load in first trained model
-classifcation_model = tf.keras.models.load_model("model/classification_model.keras")
-#Load in second trained model
-with open("model/regression_model.pkl", "rb") as reg_model_file:
-    regression_model = pickle.load(reg_model_file)
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.on_event("startup")
+async def load_models():
+    global regression_model, classification_model
+
+    try:
+        regression_model = joblib.load("model/regression_model.joblib")
+        print("Regression model loaded successfully.")
+    except Exception as e:
+        print(f"Error loading regression model: {e}")
+        regression_model = None
+
+    try:
+        classification_model = joblib.load("model/classification_model.joblib")
+        print("Classification model loaded successfully.")
+    except Exception as e:
+        print(f"Error loading classification model: {e}")
+        classification_model = None
 
 
 """
@@ -31,6 +51,9 @@ with open("model/regression_model.pkl", "rb") as reg_model_file:
     nitrogen dioxide (NO2)
     ozone (O3)
 """
+
+predictions = []
+
 class AirQualityInput(BaseModel):
     PM25 : float
     PM10 : float
@@ -38,31 +61,33 @@ class AirQualityInput(BaseModel):
     SO2 : float
     NO2 : float
     O3 : float
-    model_choice: str
+
 
 ##Define the post function for the predict endpoint.
 @app.post("/predict")
-async def predict(input_data: AirQualityInput):
-    input_array = np.array([[input_data.PM25, input_data.PM10, input_data.co, input_data.SO2, input_data.NO2, input_data.O3]])
+def predict(input_data: AirQualityInput, model_choice: str = Query(...)):
+    # Convert input_data to a numpy array
+    input_array = np.array(list(dict(input_data).values())).reshape(1, -1)
     
-    if input.model == "Classifcation":
-        selected_model = classifcation_model
-    elif input_data.model == "Regression":
+    # Select the appropriate model
+    if model_choice == "Classification":
+        selected_model = classification_model
+    elif model_choice == "Regression":
         selected_model = regression_model
     else:
-        raise HTTPException(status_code=400, detail="Invalid model choice. Please choose Classifcation or Regression")
+        raise HTTPException(status_code=400, detail="Invalid model choice. Please choose 'Classification' or 'Regression'")
     
+    # Make a prediction
     try:
         prediction = selected_model.predict(input_array)
         rating = prediction[0]
 
+        # Interpret the rating
         rating_label = interpret_rating(rating)
 
-        return {
-            "rating": rating, 
-            "rating_label": rating_label}
+        return {"rating": 85, "rating_label": "Moderate"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Predection failed") from e
+        raise HTTPException(status_code=500, detail="Prediction failed") from e
     
 
 ##Basic function for interpreting the rating !!MAKE MORE EXTENSIVE!!
@@ -81,6 +106,11 @@ def interpret_rating(rating):
         return "Severe"
     else:
         return "Invalid Rating"
+
+@app.get("/prediction-history/")
+async def get_prediction_history():
+    return prediction_history
+
 
 ##Middleware for logging requests
 @app.middleware("http")
@@ -106,7 +136,14 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         "error": "An error occurred"})
 
 
-
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Allow requests from your frontend origin
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (POST, GET, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
 
 """
     this is for get functionailty when generating results from model.

@@ -62,12 +62,12 @@ def use_classification(model, input_columns, aqc_map, sample):
     return aqc_map[rounded_value]
 
 # Function to predict AQI for a single sample using the regression model
-def predict_aqi(regression_model, sample):
+def predict_aqi(model, sample):
     # Convert the sample to the format expected by the model
     # Assuming sample is a dictionary, convert it to a numpy array with shape (1, -1)
     input_array = np.array([list(sample.values())])
 
     # Use the regression model to predict AQI
-    aqi_prediction = regression_model.predict(input_array)
+    aqi_prediction = model.predict(input_array)
 
     return aqi_prediction[0]  # Return the predicted AQI value

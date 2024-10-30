@@ -7,6 +7,7 @@ from sklearn.metrics import confusion_matrix
 import pickle
 import argparse
 import tensorflow as tf
+import joblib
 
 def plot_scatter(test_dataset, model):
     # Plot the regression line
@@ -51,8 +52,7 @@ def main(action):
         regression_model_instance = regression_model(X_train, y_train)
         
         # Save the regression model
-        with open("regression_model.pkl", "wb") as file:
-            pickle.dump(regression_model_instance, file)
+        joblib.dump(regression_model_instance, "backend/model/regression_model.joblib")
 
         # Data pre-processing for classification model
         df, aqc_map = clean_dataset(file_name)
@@ -63,7 +63,7 @@ def main(action):
         train_classification(class_model, train_ds, val_ds, epochs)
         
         # Save the classification model
-        class_model.save("backend/model/classification_model.keras")
+        joblib.dump(class_model, "backend/model/classification_model.joblib")
         df['AQI_Bucket'] = df['AQI_Bucket'].astype('category')
         aqib_map = dict(enumerate(df['AQI_Bucket'].cat.categories))
 
