@@ -2,8 +2,8 @@ import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 import tensorflow as tf
-from tensorflow.keras import layers
-from data import get_normalization_layer
+from tensorflow.keras import layers # type: ignore
+from data.data import get_normalization_layer
 import numpy as np
 
 # Regression Model
