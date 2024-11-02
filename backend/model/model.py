@@ -1,3 +1,4 @@
+import joblib
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
@@ -61,13 +62,17 @@ def use_classification(model, input_columns, aqc_map, sample):
 
     return aqc_map[rounded_value]
 
-# Function to predict AQI for a single sample using the regression model
 def predict_aqi(model, sample):
+    # Load the saved scaler
+    regression_scaler = joblib.load("regression_scaler.joblib")
+    
     # Convert the sample to the format expected by the model
-    # Assuming sample is a dictionary, convert it to a numpy array with shape (1, -1)
     input_array = np.array([list(sample.values())])
-
+    
+    # Transform the input using the saved scaler
+    input_array_scaled = regression_scaler.transform(input_array)
+    
     # Use the regression model to predict AQI
-    aqi_prediction = model.predict(input_array)
+    aqi_prediction = model.predict(input_array_scaled)
 
     return aqi_prediction[0]  # Return the predicted AQI value

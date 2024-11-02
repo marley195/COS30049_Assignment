@@ -37,10 +37,13 @@ def plot_confusion_matrix(y_true, y_pred, aqib_map):
 
 def train_models(file_name, batch_size, epochs):
     """Train and save both regression and classification models."""
+    
     # Prepare data for regression model
-    data = clean_data(file_name)
-    X_train, _, y_train, _ = regression_data(data)
+    X_train, _, y_train, _ = regression_data(file_name)
     reg_model = regression_model(X_train, y_train)
+    
+    # Save the regression model
+
     joblib.dump(reg_model, "regression_model.joblib")
     
     # Prepare data for classification model
@@ -57,7 +60,7 @@ def predict(file_name, batch_size):
     # Load models
     reg_model = joblib.load("regression_model.joblib")
     class_model = tf.keras.models.load_model("classification_model.keras")
-    
+
     # Prepare test dataset for classification model
     df, _ = clean_dataset(file_name)
     _, _, test_ds = prepare_dataset(df, batch_size)
@@ -68,11 +71,21 @@ def predict(file_name, batch_size):
     y_true = np.concatenate([y for x, y in test_ds], axis=0)
     y_pred = np.argmax(class_model.predict(test_ds), axis=1)
 
-    # Plot confusion matrix and scatter plot
-    plot_confusion_matrix(y_true, y_pred, aqib_map)
-    plot_scatter(test_ds, class_model)
+    # Output expected vs predicted values
+    print("\nExpected vs Predicted Values for Classification Model:")
+    for true, pred in zip(y_true, y_pred):
+        print(f"Expected: {true}, Predicted: {pred}")
 
-def main(action, file_name="data/city_day.csv", batch_size=256, epochs=100):
+    # Prepare data for regression predictions
+    _, X_test, _, y_test = regression_data(file_name)
+    y_reg_pred = reg_model.predict(X_test)
+
+    # Output expected vs predicted values for regression model
+    print("\nExpected vs Predicted Values for Regression Model:")
+    for true, pred in zip(y_test, y_reg_pred):
+        print(f"Expected: {true}, Predicted: {pred}")
+
+def main(action, file_name="data/city_day.csv", batch_size=256, epochs=300):
     """Main function to either train or predict."""
     if action == "train":
         train_models(file_name, batch_size, epochs)
@@ -80,6 +93,7 @@ def main(action, file_name="data/city_day.csv", batch_size=256, epochs=100):
         predict(file_name, batch_size)
     else:
         print("Invalid action. Choose 'train' or 'predict'.")
+    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train or predict using AQI models.")

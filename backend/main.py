@@ -1,13 +1,10 @@
-
-from typing import Dict, List
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse
 import time
 import numpy as np
 import joblib
-from rich import _console
 import tensorflow as tf
 
 
@@ -43,18 +40,19 @@ except Exception as e:
 predictions_list = []
 
 class AirQualityInput(BaseModel):
-    Benzene: float
-    CO: float
-    NH3: float
+    PM2_5: float = Field(alias="PM2.5") # PM2.5
+    PM10: float
     NO: float
     NO2: float
     NOx: float
-    O3: float
-    PM10: float
-    PM2_5: float = Field(alias="PM2.5") # Adjusted to match the input field name
+    NH3: float
+    CO: float
     SO2: float
+    O3: float
+    Benzene: float
     Toluene: float
     Xylene: float
+
 
 aqc_map = {
     0: "Good",
@@ -71,20 +69,19 @@ def predict(input_data: AirQualityInput):
         raise HTTPException(status_code=500, detail="Models not loaded successfully.")
     # Concatenate all input tensors into a single tensor
     input_dict = {
-        "Benzene": tf.constant([[float(input_data.Benzene)]], dtype=tf.float32),
-        "CO": tf.constant([[float(input_data.CO)]], dtype=tf.float32),
-        "NH3": tf.constant([[float(input_data.NH3)]], dtype=tf.float32),
+        "PM2.5": tf.constant([[float(input_data.PM2_5)]], dtype=tf.float32),  # PM2.5
+        "PM10": tf.constant([[float(input_data.PM10)]], dtype=tf.float32),
         "NO": tf.constant([[float(input_data.NO)]], dtype=tf.float32),
         "NO2": tf.constant([[float(input_data.NO2)]], dtype=tf.float32),
         "NOx": tf.constant([[float(input_data.NOx)]], dtype=tf.float32),
-        "O3": tf.constant([[float(input_data.O3)]], dtype=tf.float32),
-        "PM10": tf.constant([[float(input_data.PM10)]], dtype=tf.float32),
-        "PM2.5": tf.constant([[float(input_data.PM2_5)]], dtype=tf.float32),  # Ensure the key matches exactly
+        "NH3": tf.constant([[float(input_data.NH3)]], dtype=tf.float32),
+        "CO": tf.constant([[float(input_data.CO)]], dtype=tf.float32),
         "SO2": tf.constant([[float(input_data.SO2)]], dtype=tf.float32),
+        "O3": tf.constant([[float(input_data.O3)]], dtype=tf.float32),
+        "Benzene": tf.constant([[float(input_data.Benzene)]], dtype=tf.float32),
         "Toluene": tf.constant([[float(input_data.Toluene)]], dtype=tf.float32),
         "Xylene": tf.constant([[float(input_data.Xylene)]], dtype=tf.float32),
     }
-
     prediction = classification_model.predict(input_dict)
     print(f"Prediction number: {prediction}")
     predicted_class = np.argmax(prediction[0])

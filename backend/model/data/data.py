@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 from tensorflow.keras import layers # type: ignore
@@ -24,17 +25,17 @@ def regression_data(data):
     - Drops AQI and AQI_Bucket columns to get features (X).
     - Uses AQI as the target (y).
     - Splits data into training and testing sets.
-    - Standardizes the data using StandardScaler.
+    - Standardizes the data using MinMaxScaler.
     """
-    X_aqi = data.drop(columns=['AQI', 'AQI_Bucket'])
-    y_aqi = data['AQI']
-    X_train_aqi, X_test_aqi, y_train_aqi, y_test_aqi = train_test_split(X_aqi, y_aqi, test_size=0.2, random_state=42)
-    
-    scaler = StandardScaler()
-    X_train_aqi = scaler.fit_transform(X_train_aqi)
-    X_test_aqi = scaler.transform(X_test_aqi)
-    
-    return X_train_aqi, X_test_aqi, y_train_aqi, y_test_aqi
+    # Assuming data is already cleaned
+    data = pd.read_csv(data).drop(columns=['AQI_Bucket', 'City', 'Date']).dropna()
+    X = data.drop(columns=['AQI'])
+    y = data.pop('AQI')
+
+    # Split data into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
+
+    return X_train, X_test, y_train, y_test
 
 def df_to_dataset(dataframe, shuffle=True, batch_size=32):
     """
