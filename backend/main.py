@@ -1,14 +1,16 @@
+import io
 import logging
 from typing import Dict
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 import time
 import numpy as np
 import joblib
 import tensorflow as tf
 from pydantic import Field
+from matplotlib import pyplot as plt
 
 app = FastAPI()
 
@@ -20,10 +22,8 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods (POST, GET, etc.)
     allow_headers=["*"],  # Allow all headers
 )
-
 # Global model variables
 global regression_model, classification_model
-
 # Load models with error handling
 try:
     regression_model = joblib.load("model/regression_model.joblib")
@@ -31,13 +31,14 @@ try:
 except Exception as e:
     print(f"Error loading regression model: {e}")
     regression_model = None
-
 try:
     classification_model = tf.keras.models.load_model("model/classification_model.keras")  # Adjusted to TensorFlow model loading
     print("Classification model loaded successfully.")
 except Exception as e:
     print(f"Error loading classification model: {e}")
     classification_model = None
+
+predictions_list = []
 
 class AirQualityInput(BaseModel):
     Benzene: float
@@ -89,14 +90,22 @@ def predict(input_data: AirQualityInput):
     input_array = np.array(list(input_data.dict().values())).reshape(1, -1)
     print("Running regression model prediction with input array:", input_array)
     prediction = regression_model.predict(input_array)
+    predictions_list.append([prediction, input_data.dict()])
     print("Prediction output from regression model:", prediction)
     rating = prediction[0]
     # Interpret the prediction
     #rating_label = interpret_rating(rating)
     return {rating, rating_label}
 
+## Get predictions from prediction list, exeception handling for no predictions available
+@app.get("/predictions")
+async def get_predictions():
+    if not predictions_list:
+        raise HTTPException(status_code=404, detail="No predictions available")
+    return JSONResponse(content={"predictions": predictions_list})
 
-## Middleware for logging requests
+
+## Middleware for logging requests - This will log all requests to the console
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
@@ -105,15 +114,14 @@ async def log_requests(request: Request, call_next):
     print(f"request: {request.url} - Duration: {process_time} seconds")
     return response
 
-## Exception handling for general errors
+
+## Exception handling for general errors - Allows us to get consisstne error messages
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.detail, "error": "An error occurred"}
     )
-
-
 
 
 """

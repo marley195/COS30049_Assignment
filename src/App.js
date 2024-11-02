@@ -2,34 +2,34 @@ import React, { useState } from "react";
 import axios from "axios";
 import InputForm from "./components/InputForm";
 import DataVisualization from "./components/DataVisualization";
+import DynamicGraph from "./components/DynamicGraph";
+import PredictionGraph from "./components/PredictionGraph";
 import { AppContainer, StyledPaper } from "./styles/AppStyles";
 import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
 
 function App() {
-  const [aqiPrediction, setAqiPrediction] = useState(0);
-  const [aqiCategory, setAqiCategory] = useState(0);
+  const [aqiPrediction, setAqiPrediction] = useState(null);
+  const [aqiCategory, setAqiCategory] = useState(null);
   const [inputData, setInputData] = useState({});
-  const [error, setError] = useState(null); // Initialize as null to avoid confusio
+  const [predictions, setPredictions] = useState([]);
+  const [error, setError] = useState(null);
+
   const handleFormSubmit = async (inputData) => {
-    // Store input data immediately for visualization
     setInputData(inputData);
-    setError(null); // Reset error message
+    setError(null);
     console.log("Sending input data:", inputData);
     try {
-      // Send request to backend
       const response = await axios.post(
-        "http://127.0.0.1:8000/predict", // Corrected model_choice
-        inputData, // Send inputData directly
+        "http://127.0.0.1:8000/predict",
+        inputData,
         {
           headers: { "Content-Type": "application/json" },
         }
       );
-      console.log("Sending input data:", inputData);
-      // Set response data in state
       setAqiPrediction(response.data[0]);
-      console.log(response.data[0]);
       setAqiCategory(response.data[1]);
-      console.log(response.data[1]);
     } catch (error) {
       console.error("Error fetching prediction or classification:", error);
       setError("Failed to fetch data from backend. Please try again.");
@@ -39,36 +39,62 @@ function App() {
   };
 
   return (
-    <AppContainer>
-      <Typography variant="h4" gutterBottom>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        minHeight: "100vh",
+        overflowY: "auto", // Enable vertical scrolling
+        padding: 2,
+      }}
+    >
+      <Typography variant="h4" gutterBottom align="center">
         AQI Prediction and Classification
       </Typography>
-      <StyledPaper>
-        <InputForm onSubmit={handleFormSubmit} />
-      </StyledPaper>
 
-      {error && (
-        <Typography variant="body1" color="error" gutterBottom>
-          {error}
-        </Typography>
-      )}
-
-      {Object.keys(inputData).length > 0 && (
-        <>
-          {aqiPrediction !== null && aqiPrediction !== undefined && (
-            <Typography variant="h6">
-              Predicted AQI: {aqiPrediction.toFixed(2)}
+      <Grid container spacing={2} justifyContent="center">
+        {/* Input Form Section */}
+        <Grid item xs={12} md={6}>
+          <StyledPaper>
+            <InputForm onSubmit={handleFormSubmit} />
+          </StyledPaper>
+          {error && (
+            <Typography variant="body1" color="error" gutterBottom>
+              {error}
             </Typography>
           )}
-          {aqiCategory && (
-            <Typography variant="h6">
-              Air Quality Category: {aqiCategory}
-            </Typography>
+          {Object.keys(inputData).length > 0 && (
+            <>
+              {aqiPrediction !== null && aqiPrediction !== undefined && (
+                <Typography variant="h6">
+                  Predicted AQI: {aqiPrediction}
+                </Typography>
+              )}
+              {aqiCategory && (
+                <Typography variant="h6">
+                  Air Quality Category: {aqiCategory}
+                </Typography>
+              )}
+              <DataVisualization
+                aqiCategory={aqiCategory}
+                inputData={inputData}
+              />
+            </>
           )}
-          <DataVisualization aqiCategory={aqiCategory} inputData={inputData} />
-        </>
-      )}
-    </AppContainer>
+        </Grid>
+
+        {/* Prediction Graph Section */}
+        <Grid item xs={12} md={6}>
+          <StyledPaper>
+            <Typography variant="h5" gutterBottom align="center">
+              Prediction Graph
+            </Typography>
+            <PredictionGraph />
+          </StyledPaper>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
 
