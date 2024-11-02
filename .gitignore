@@ -5,7 +5,6 @@ Lib
 Scripts
 share
 pyvenv.cfg
-node_modules
 
 # Mac OS
 .DS_Store

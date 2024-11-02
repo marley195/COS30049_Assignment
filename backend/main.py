@@ -1,6 +1,5 @@
-import io
-import logging
-from typing import Dict
+
+from typing import Dict, List
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -8,9 +7,12 @@ from fastapi.responses import JSONResponse, StreamingResponse
 import time
 import numpy as np
 import joblib
+from rich import _console
 import tensorflow as tf
+
+
 from pydantic import Field
-from matplotlib import pyplot as plt
+
 
 app = FastAPI()
 
@@ -82,28 +84,35 @@ def predict(input_data: AirQualityInput):
         "Toluene": tf.constant([[float(input_data.Toluene)]], dtype=tf.float32),
         "Xylene": tf.constant([[float(input_data.Xylene)]], dtype=tf.float32),
     }
+
     prediction = classification_model.predict(input_dict)
     print(f"Prediction number: {prediction}")
     predicted_class = np.argmax(prediction[0])
-    rating_label = aqc_map.get(predicted_class, "Unknown")   
+    rating_label = aqc_map.get(predicted_class, "Unknown")
+
     # Prepare input as a single array for the regression model
-    input_array = np.array(list(input_data.dict().values())).reshape(1, -1)
+    input_array = np.array(list(input_data.model_dump().values())).reshape(1, -1)
     print("Running regression model prediction with input array:", input_array)
     prediction = regression_model.predict(input_array)
-    predictions_list.append([prediction, input_data.dict()])
     print("Prediction output from regression model:", prediction)
     rating = prediction[0]
-    # Interpret the prediction
-    #rating_label = interpret_rating(rating)
-    return {rating, rating_label}
+
+    ## Append the prediction to the predictions list
+    predictions_list.append({
+        "input": input_data.model_dump(),  # Save the input data as a dictionary
+        "prediction": rating,
+        "Rating Bracket": rating_label
+    })
+    print(rating, rating_label)
+    return {"rating":rating, "rating_label": rating_label}
 
 ## Get predictions from prediction list, exeception handling for no predictions available
 @app.get("/predictions")
-async def get_predictions():
+def get_predictions():
     if not predictions_list:
         raise HTTPException(status_code=404, detail="No predictions available")
+    print(predictions_list)
     return JSONResponse(content={"predictions": predictions_list})
-
 
 ## Middleware for logging requests - This will log all requests to the console
 @app.middleware("http")
@@ -124,13 +133,3 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     )
 
 
-"""
-    this is for get functionailty when generating results from model.
-
-    To avoid writing to disk we can stream the data back to the clien using the below code.
-    memory_stream = io.BytesIO()
-    image.save(memory_stream, format="JPEG")
-    memory_stream.seek(0)
-    return StreamingResponse(memory_stream, media_type="image/jpeg")
-
-"""

@@ -28,8 +28,8 @@ function App() {
           headers: { "Content-Type": "application/json" },
         }
       );
-      setAqiPrediction(response.data[0]);
-      setAqiCategory(response.data[1]);
+      setAqiPrediction(response.data.rating);
+      setAqiCategory(response.data.rating_label);
     } catch (error) {
       console.error("Error fetching prediction or classification:", error);
       setError("Failed to fetch data from backend. Please try again.");
@@ -76,10 +76,7 @@ function App() {
                   Air Quality Category: {aqiCategory}
                 </Typography>
               )}
-              <DataVisualization
-                aqiCategory={aqiCategory}
-                inputData={inputData}
-              />
+              <DataVisualization inputData={inputData} />
             </>
           )}
         </Grid>
