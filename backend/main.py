@@ -92,7 +92,7 @@ def predict(input_data: AirQualityInput):
     print("Running regression model prediction with input array:", input_array)
     prediction = regression_model.predict(input_array)
     print("Prediction output from regression model:", prediction)
-    rating = prediction[0]
+    rating = round(prediction[0])
 
     ## Append the prediction to the predictions list
     predictions_list.append({
