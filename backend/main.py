@@ -63,6 +63,14 @@ aqc_map = {
     5: "Severe"
 }
 
+general_health_advice_map = {
+    "Good": "Air quality is considered satisfactory, and air pollution poses little or no risk",
+    "Moderate": "Air quality is acceptable; however, for some pollutants there may be a moderate health concern for a very small number of people who are unusually sensitive to air pollution.",
+    "Unhealthy": "Members of sensitive groups may experience health effects. The general public is not likely to be affected.",
+    "Very Unhealthy": "Health warnings of emergency conditions. The entire population is more likely to be affected.",
+    "Severe": "	Health alert: everyone may experience more serious health effects"
+}
+
 @app.post("/predict")
 def predict(input_data: AirQualityInput):
     if classification_model is None or regression_model is None:
@@ -93,15 +101,17 @@ def predict(input_data: AirQualityInput):
     prediction = regression_model.predict(input_array)
     print("Prediction output from regression model:", prediction)
     rating = round(prediction[0])
+    general_health_advice = general_health_advice_map.get(rating_label, "No specific advice available.")
 
     ## Append the prediction to the predictions list
     predictions_list.append({
         "input": input_data.model_dump(),  # Save the input data as a dictionary
         "prediction": rating,
-        "Rating Bracket": rating_label
+        "Rating Bracket": rating_label,
+        "General Health Advice": general_health_advice
     })
     print(rating, rating_label)
-    return {"rating":rating, "rating_label": rating_label}
+    return {"rating":rating, "rating_label": rating_label, "general_health_advice": general_health_advice}
 
 ## Get predictions from prediction list, exeception handling for no predictions available
 @app.get("/predictions")
