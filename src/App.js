@@ -69,21 +69,6 @@ function App() {
           )}
           {Object.keys(inputData).length > 0 && (
             <>
-              {aqiPrediction !== null && aqiPrediction !== undefined && (
-                <Typography variant="h6">
-                  Predicted AQI: {aqiPrediction}
-                </Typography>
-              )}
-              {aqiCategory && (
-                <Typography variant="h6">
-                  Air Quality Category: {aqiCategory}
-                </Typography>
-              )}
-              {healthAdvice && (
-                <Typography variant="h6" color="textSecondary" gutterBottom>
-                  Health Advice: {healthAdvice}
-                </Typography>
-              )}
               <DataVisualization inputData={inputData} />
             </>
           )}

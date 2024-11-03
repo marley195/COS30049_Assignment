@@ -143,11 +143,6 @@ function DataVisualization({ aqiCategory, inputData }) {
 
   return (
     <StyledPaper>
-      <Typography variant="h6" gutterBottom>
-        AQI Classification
-      </Typography>
-      <svg ref={svgRefRadial}></svg>
-
       <Typography variant="h6" gutterBottom style={{ marginTop: '20px' }}>
         Input Parameter Values
       </Typography>
