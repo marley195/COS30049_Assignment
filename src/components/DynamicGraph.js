@@ -40,7 +40,7 @@ export default function DynamicGraph() {
         (entry) => entry["General Health Advice"]
       );
 
-      // Update the chart data, this will trigger a re-render
+      // Update the chart data, this will trigger a re-render and allows the graph to dynmaically update with new data.
       setChartData({
         labels,
         datasets: [
