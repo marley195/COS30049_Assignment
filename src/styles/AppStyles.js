@@ -28,9 +28,25 @@ export const StyledPaper = styled(Paper)(({ theme }) => ({
   backgroundColor: "rgba(255, 255, 255, 0.9)", // Slightly transparent white background
   boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
   borderRadius: "8px", // Rounded corners
+  //boxSizing: "border-box",
 
   [theme.breakpoints.down("sm")]: {
     padding: "1rem",
     margin: "1rem 0",
   },
 }));
+
+
+export const StyledListElement = styled(Paper)(({ theme }) => ({
+	width: "100%",
+	maxWidth: "800px",
+	textAlign: "center",
+	backgroundColor: "rgba(255, 255, 255, 0.9)", // Slightly transparent white background
+	boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+	borderRadius: "8px", // Rounded corners
+	
+	padding: "1rem",
+	margin: "1rem 0",
+	boxSizing: "border-box",
+	fontSize: "24pt"
+  }));

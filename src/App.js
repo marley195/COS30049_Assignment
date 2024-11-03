@@ -9,6 +9,7 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 
+
 function App() {
   const [aqiPrediction, setAqiPrediction] = useState(null);
   const [aqiCategory, setAqiCategory] = useState(null);
@@ -39,6 +40,9 @@ function App() {
       setAqiCategory(null);
       setHealthAdvice(null); // Clear health advice if there's an error
     }
+	setAqiPrediction('87');
+	setAqiCategory('poor');
+	setHealthAdvice('foo bar');
   };
 
   return (
@@ -92,10 +96,10 @@ function App() {
         {/* Prediction Graph Section */}
         <Grid item xs={12} md={6}>
           <StyledPaper>
-            <Typography variant="h5" gutterBottom align="center">
-              Prediction Graph
+            <Typography variant="h4" gutterBottom align="center">
+              Prediction Results
             </Typography>
-            <PredictionGraph />
+            <PredictionGraph aqi={aqiPrediction} category={aqiCategory} advice={healthAdvice} />
           </StyledPaper>
         </Grid>
       </Grid>

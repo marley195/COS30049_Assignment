@@ -4,3 +4,7 @@ matplotlib
 scikit-learn
 tensorflow
 seaborn
+
+uvicorn
+fastapi
+rich
