@@ -2,18 +2,17 @@ import React, { useState } from "react";
 import axios from "axios";
 import InputForm from "./components/InputForm";
 import DataVisualization from "./components/DataVisualization";
-import DynamicGraph from "./components/DynamicGraph";
+import DynamicGraph from "./components/DynamicGraph"; // Import DynamicGraph component
 import PredictionGraph from "./components/PredictionGraph";
 import { AppContainer, StyledPaper } from "./styles/AppStyles";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 
-
 function App() {
   const [aqiPrediction, setAqiPrediction] = useState(null);
   const [aqiCategory, setAqiCategory] = useState(null);
-  const [healthAdvice, setHealthAdvice] = useState(null); // Added state for health advice
+  const [healthAdvice, setHealthAdvice] = useState(null);
   const [inputData, setInputData] = useState({});
   const [predictions, setPredictions] = useState([]);
   const [error, setError] = useState(null);
@@ -32,17 +31,14 @@ function App() {
       );
       setAqiPrediction(response.data.rating);
       setAqiCategory(response.data.rating_label);
-      setHealthAdvice(response.data.general_health_advice); // Set health advice from response
+      setHealthAdvice(response.data.general_health_advice);
     } catch (error) {
       console.error("Error fetching prediction or classification:", error);
       setError("Failed to fetch data from backend. Please try again.");
       setAqiPrediction(null);
       setAqiCategory(null);
-      setHealthAdvice(null); // Clear health advice if there's an error
+      setHealthAdvice(null);
     }
-	setAqiPrediction('87');
-	setAqiCategory('poor');
-	setHealthAdvice('foo bar');
   };
 
   return (
@@ -52,7 +48,7 @@ function App() {
         flexDirection: "column",
         alignItems: "center",
         minHeight: "100vh",
-        overflowY: "auto", // Enable vertical scrolling
+        overflowY: "auto",
         padding: 2,
       }}
     >
@@ -99,7 +95,17 @@ function App() {
             <Typography variant="h4" gutterBottom align="center">
               Prediction Results
             </Typography>
-            <PredictionGraph aqi={aqiPrediction} category={aqiCategory} advice={healthAdvice} />
+            <PredictionGraph
+              aqi={aqiPrediction}
+              category={aqiCategory}
+              advice={healthAdvice}
+            />
+
+            {/* Add DynamicGraph below PredictionGraph */}
+            <Typography variant="h6" align="center" gutterBottom>
+              All Predictions Over Time
+            </Typography>
+            <DynamicGraph />
           </StyledPaper>
         </Grid>
       </Grid>
